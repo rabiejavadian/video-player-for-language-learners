@@ -4,7 +4,7 @@ import json
 import os
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                             QHBoxLayout, QPushButton, QFileDialog, QLabel,
-                            QSplitter)
+                            QSplitter, QDialog, QTextBrowser)
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont, QColor
 import pysrt
@@ -12,7 +12,7 @@ import pysrt
 class VideoPlayer(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Dual Subtitle Video Player")
+        self.setWindowTitle("Video Player for Language Learners")
         self.setGeometry(100, 100, 1280, 720)
 
         # Create VLC instance with proper parameters
@@ -99,45 +99,9 @@ class VideoPlayer(QMainWindow):
         # Create button container with matching dark theme
         button_container = QWidget()
         button_container.setStyleSheet("background-color: #2A2A2A;")
-        button_layout = QHBoxLayout(button_container)
-        button_layout.setContentsMargins(10, 5, 10, 5)
+        button_layout = self.create_buttons()  # Use the create_buttons method
+        button_container.setLayout(button_layout)
         layout.addWidget(button_container)
-
-        # Style for buttons
-        button_style = """
-            QPushButton {
-                background-color: #3A3A3A;
-                color: white;
-                border: none;
-                padding: 5px 15px;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #4A4A4A;
-            }
-            QPushButton:pressed {
-                background-color: #555555;
-            }
-        """
-
-        # Create buttons with dark theme
-        self.open_button = QPushButton("Open Video")
-        self.open_english_subtitle_button = QPushButton("Open English Subtitles")
-        self.open_persian_subtitle_button = QPushButton("Open Persian Subtitles")
-        
-        # Apply button style
-        self.open_button.setStyleSheet(button_style)
-        self.open_english_subtitle_button.setStyleSheet(button_style)
-        self.open_persian_subtitle_button.setStyleSheet(button_style)
-        
-        button_layout.addWidget(self.open_button)
-        button_layout.addWidget(self.open_english_subtitle_button)
-        button_layout.addWidget(self.open_persian_subtitle_button)
-
-        # Connect buttons
-        self.open_button.clicked.connect(self.open_file)
-        self.open_english_subtitle_button.clicked.connect(lambda: self.open_subtitle_file('english'))
-        self.open_persian_subtitle_button.clicked.connect(lambda: self.open_subtitle_file('persian'))
 
         # Initialize variables
         self.media = None
@@ -277,12 +241,14 @@ class VideoPlayer(QMainWindow):
             self.open_button.hide()
             self.open_english_subtitle_button.hide()
             self.open_persian_subtitle_button.hide()
+            self.help_button.hide()
             self.showFullScreen()
             self.is_fullscreen = True
         else:
             self.open_button.show()
             self.open_english_subtitle_button.show()
             self.open_persian_subtitle_button.show()
+            self.help_button.show()
             self.showNormal()
             self.setGeometry(self.normal_geometry)
             self.is_fullscreen = False
@@ -436,6 +402,155 @@ class VideoPlayer(QMainWindow):
 
     def closeEvent(self, event):
         super().closeEvent(event)
+
+    def create_buttons(self):
+        button_layout = QHBoxLayout()
+        button_layout.setContentsMargins(10, 5, 10, 5)
+        button_layout.setSpacing(10)
+        
+        # Create buttons
+        open_button = QPushButton("Open Video")
+        open_button.clicked.connect(self.open_file)
+        
+        open_english_subtitle = QPushButton("Open English Subtitles")
+        open_english_subtitle.clicked.connect(lambda: self.open_subtitle_file('english'))
+        
+        open_persian_subtitle = QPushButton("Open Persian Subtitles")
+        open_persian_subtitle.clicked.connect(lambda: self.open_subtitle_file('persian'))
+
+        help_button = QPushButton("Keyboard Shortcuts")
+        help_button.clicked.connect(self.show_shortcuts)
+        
+        # Store buttons as instance variables for fullscreen toggle
+        self.open_button = open_button
+        self.open_english_subtitle_button = open_english_subtitle
+        self.open_persian_subtitle_button = open_persian_subtitle
+        self.help_button = help_button
+        
+        # Add buttons to layout
+        button_layout.addWidget(open_button)
+        button_layout.addWidget(open_english_subtitle)
+        button_layout.addWidget(open_persian_subtitle)
+        button_layout.addWidget(help_button)
+        
+        # Style the buttons
+        for button in [open_button, open_english_subtitle, open_persian_subtitle, help_button]:
+            button.setStyleSheet("""
+                QPushButton {
+                    background-color: #2A2A2A;
+                    color: white;
+                    border: none;
+                    padding: 5px 15px;
+                    border-radius: 3px;
+                }
+                QPushButton:hover {
+                    background-color: #404040;
+                }
+                QPushButton:pressed {
+                    background-color: #505050;
+                }
+            """)
+        
+        return button_layout
+
+    def show_shortcuts(self):
+        shortcuts_text = """
+<h2>Keyboard Shortcuts</h2>
+<table style='border-collapse: collapse; width: 100%;'>
+    <tr style='background-color: #2A2A2A;'>
+        <th style='padding: 8px; text-align: left; border: 1px solid #404040;'>Key</th>
+        <th style='padding: 8px; text-align: left; border: 1px solid #404040;'>Action</th>
+    </tr>
+    <tr>
+        <td style='padding: 8px; border: 1px solid #404040;'>Spacebar</td>
+        <td style='padding: 8px; border: 1px solid #404040;'>Play/Pause video</td>
+    </tr>
+    <tr style='background-color: #2A2A2A;'>
+        <td style='padding: 8px; border: 1px solid #404040;'>Right Arrow</td>
+        <td style='padding: 8px; border: 1px solid #404040;'>Play until end of next subtitle</td>
+    </tr>
+    <tr>
+        <td style='padding: 8px; border: 1px solid #404040;'>Ctrl + Right</td>
+        <td style='padding: 8px; border: 1px solid #404040;'>Skip to start of next subtitle</td>
+    </tr>
+    <tr style='background-color: #2A2A2A;'>
+        <td style='padding: 8px; border: 1px solid #404040;'>Left Arrow</td>
+        <td style='padding: 8px; border: 1px solid #404040;'>Go to previous subtitle</td>
+    </tr>
+    <tr>
+        <td style='padding: 8px; border: 1px solid #404040;'>Down Arrow</td>
+        <td style='padding: 8px; border: 1px solid #404040;'>Repeat current subtitle</td>
+    </tr>
+    <tr style='background-color: #2A2A2A;'>
+        <td style='padding: 8px; border: 1px solid #404040;'>F</td>
+        <td style='padding: 8px; border: 1px solid #404040;'>Toggle fullscreen</td>
+    </tr>
+    <tr>
+        <td style='padding: 8px; border: 1px solid #404040;'>Escape</td>
+        <td style='padding: 8px; border: 1px solid #404040;'>Exit fullscreen</td>
+    </tr>
+</table>
+
+<h3 style='margin-top: 15px;'>Tips:</h3>
+<ul>
+    <li>Use Right Arrow to continue from current position</li>
+    <li>Use Ctrl+Right to jump to next subtitle immediately</li>
+    <li>Use Down Arrow to practice current subtitle</li>
+    <li>Use Left Arrow to review previous subtitles</li>
+</ul>
+"""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Keyboard Shortcuts")
+        dialog.setFixedSize(500, 600)
+        
+        # Create layout
+        layout = QVBoxLayout(dialog)
+        
+        # Create text browser for rich text
+        text_browser = QTextBrowser()
+        text_browser.setHtml(shortcuts_text)
+        text_browser.setStyleSheet("""
+            QTextBrowser {
+                background-color: #1A1A1A;
+                color: white;
+                border: none;
+                padding: 10px;
+            }
+        """)
+        
+        # Add close button
+        close_button = QPushButton("Close")
+        close_button.clicked.connect(dialog.close)
+        close_button.setStyleSheet("""
+            QPushButton {
+                background-color: #2A2A2A;
+                color: white;
+                border: none;
+                padding: 5px 15px;
+                border-radius: 3px;
+                min-width: 80px;
+            }
+            QPushButton:hover {
+                background-color: #404040;
+            }
+            QPushButton:pressed {
+                background-color: #505050;
+            }
+        """)
+        
+        # Add widgets to layout
+        layout.addWidget(text_browser)
+        layout.addWidget(close_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        
+        # Set dialog style
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: #1A1A1A;
+                color: white;
+            }
+        """)
+        
+        dialog.exec()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

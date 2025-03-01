@@ -2,6 +2,8 @@
 
 A specialized video player designed for language learning, featuring dual subtitle support and smart navigation controls. Perfect for studying languages through movies and TV shows, with synchronized English and Persian subtitles.
 
+![Player Screenshot](images/Player.png)
+
 ## About
 
 This application was developed entirely through natural language prompting in [Cursor - The AI-First Code Editor](https://cursor.sh/)
@@ -144,8 +146,6 @@ This application was developed entirely through natural language prompting in [C
 
 The video player automatically pauses at the end of each subtitle line, allowing you to focus on pronunciation and comprehension. The dual subtitle display helps in understanding context and translation simultaneously. The interface is designed for minimal distraction while maintaining all necessary controls for effective language learning.
 
-
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -160,6 +160,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 If you encounter any issues or have questions:
+
 1. Check the [Issues](../../issues) page
 2. Create a new issue if your problem isn't already listed
 3. Provide as much detail as possible, including:
