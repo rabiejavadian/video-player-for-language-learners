@@ -44,8 +44,27 @@ class VideoPlayer(QMainWindow):
         """)
         layout.addWidget(self.splitter)
 
-        # Create video frame with proper attributes
+        # Create video frame with proper attributes and instructions
         self.video_frame = QWidget()
+        self.video_instructions = QLabel("""
+How to Use:
+1. Click 'Open Video' to select your video file
+2. Open English and Persian subtitles
+3. Press Spacebar to start playing
+
+Important: If you want to change subtitles, close and restart the app!
+""")
+        self.video_instructions.setStyleSheet("""
+            QLabel {
+                color: #808080;
+                background-color: transparent;
+                font-size: 16px;
+                padding: 20px;
+            }
+        """)
+        self.video_instructions.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        video_layout = QVBoxLayout(self.video_frame)
+        video_layout.addWidget(self.video_instructions, alignment=Qt.AlignmentFlag.AlignCenter)
         self.video_frame.setStyleSheet("background-color: black;")
         self.video_frame.setMinimumHeight(400)
         self.video_frame.setAttribute(Qt.WidgetAttribute.WA_OpaquePaintEvent)  # Prevent flickering
@@ -126,6 +145,7 @@ class VideoPlayer(QMainWindow):
 
     def load_video(self, video_path):
         self.current_video_path = video_path
+        self.video_instructions.hide()  # Hide instructions when video is loaded
         
         # Create media with subtitle disabled
         media_opts = [
@@ -154,6 +174,10 @@ class VideoPlayer(QMainWindow):
         self.media_player.set_pause(1)
         self.is_playing = False
         self.timer.start()
+        
+        # Set focus to main window for keyboard control
+        self.setFocus()
+        self.activateWindow()
 
     def open_file(self):
         dialog = QFileDialog()
@@ -188,6 +212,10 @@ class VideoPlayer(QMainWindow):
                 self.current_persian_subtitle_path = subtitle_path
                 if self.english_subtitles:
                     self.update_subtitle_text()
+                    
+            # Set focus to main window for keyboard control
+            self.setFocus()
+            self.activateWindow()
                 
         except Exception as e:
             print(f"Error loading subtitle: {e}")
@@ -502,10 +530,10 @@ class VideoPlayer(QMainWindow):
         open_button = QPushButton("Open Video")
         open_button.clicked.connect(self.open_file)
         
-        open_english_subtitle = QPushButton("Open English Subtitles")
+        open_english_subtitle = QPushButton("Open English Subtitle")
         open_english_subtitle.clicked.connect(lambda: self.open_subtitle_file('english'))
         
-        open_persian_subtitle = QPushButton("Open Persian Subtitles")
+        open_persian_subtitle = QPushButton("Open Persian Subtitle")
         open_persian_subtitle.clicked.connect(lambda: self.open_subtitle_file('persian'))
 
         help_button = QPushButton("Keyboard Shortcuts")
@@ -545,6 +573,16 @@ class VideoPlayer(QMainWindow):
 
     def show_shortcuts(self):
         shortcuts_text = """
+<h2>How to Use</h2>
+<div style='margin-bottom: 20px; padding: 10px; background-color: #2A2A2A; border-radius: 5px;'>
+    <ol>
+        <li style='margin-bottom: 8px;'>Click 'Open Video' to select your video file</li>
+        <li style='margin-bottom: 8px;'>Open English and Persian subtitle files</li>
+        <li style='margin-bottom: 8px;'>Press Spacebar to start playing</li>
+    </ol>
+    <p style='color: #ff9999;'><strong>Important:</strong> If subtitles become out of sync or you want to change subtitles, please close and restart the application!</p>
+</div>
+
 <h2>Keyboard Shortcuts</h2>
 <table style='border-collapse: collapse; width: 100%;'>
     <tr style='background-color: #2A2A2A;'>
@@ -587,6 +625,7 @@ class VideoPlayer(QMainWindow):
     <li>Use Ctrl+Right to jump to next subtitle immediately</li>
     <li>Use Down Arrow to practice current subtitle</li>
     <li>Use Left Arrow to review previous subtitles</li>
+    <li>If subtitles become out of sync, restart the application</li>
 </ul>
 """
         dialog = QDialog(self)
