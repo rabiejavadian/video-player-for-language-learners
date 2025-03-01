@@ -163,6 +163,9 @@ class VideoPlayer(QMainWindow):
             self.load_video(video_path)
 
     def open_subtitle_file(self, language):
+        if not self.media:  # If no video is loaded, don't open subtitle dialog
+            return
+            
         dialog = QFileDialog()
         subtitle_path, _ = dialog.getOpenFileName(self, f"Open {language.title()} Subtitle File", "",
                                                 "Subtitle Files (*.srt)")
@@ -177,22 +180,32 @@ class VideoPlayer(QMainWindow):
                 # Make sure VLC subtitles are still disabled
                 self.media_player.video_set_spu(-1)
                 self.media_player.video_set_subtitle_file("")
+                # Find current subtitle index
+                self.find_current_subtitle_index()
+                self.update_subtitle_text()
             else:
                 self.persian_subtitles = pysrt.open(subtitle_path)
                 self.current_persian_subtitle_path = subtitle_path
-            
-            # Find correct subtitle index based on current video position
+                if self.english_subtitles:
+                    self.update_subtitle_text()
+                
+        except Exception as e:
+            print(f"Error loading subtitle: {e}")
             if language == 'english':
-                self.find_current_subtitle_index()
-                self.update_subtitle_text()
-        except Exception:
-            pass
+                self.english_subtitles = None
+                self.current_english_subtitle_path = None
+            else:
+                self.persian_subtitles = None
+                self.current_persian_subtitle_path = None
 
     def find_current_subtitle_index(self):
         if not self.english_subtitles:
             return
 
         current_time = self.media_player.get_time()
+        if current_time < 0:  # Handle invalid time
+            self.current_subtitle_index = 0
+            return
         
         # Find the appropriate subtitle index for the current time
         for i, subtitle in enumerate(self.english_subtitles):
@@ -213,6 +226,13 @@ class VideoPlayer(QMainWindow):
         self.current_subtitle_index = len(self.english_subtitles) - 1
 
     def keyPressEvent(self, event):
+        if not self.media:  # If no media is loaded, ignore keyboard shortcuts
+            if event.key() == Qt.Key.Key_F:  # Allow fullscreen toggle even without media
+                self.toggle_fullscreen()
+            elif event.key() == Qt.Key.Key_Escape and self.is_fullscreen:
+                self.toggle_fullscreen()
+            return
+            
         if event.key() == Qt.Key.Key_Space:
             self.toggle_play_pause()
         elif event.key() == Qt.Key.Key_Right:
@@ -222,9 +242,6 @@ class VideoPlayer(QMainWindow):
                 self.play_until_next_subtitle()
         elif event.key() == Qt.Key.Key_Left:
             self.previous_subtitle()
-            if not self.media_player.is_playing():
-                self.media_player.play()
-                self.is_playing = True
         elif event.key() == Qt.Key.Key_Down:
             self.repeat_current_subtitle()
             if not self.media_player.is_playing():
@@ -265,6 +282,10 @@ class VideoPlayer(QMainWindow):
                 self.media_player.play()
                 self.is_playing = True
                 self.next_subtitle_end_time = None
+                # Update subtitle display immediately when resuming
+                if self.english_subtitles:
+                    self.find_current_subtitle_index()
+                    self.update_subtitle_text()
 
     def next_subtitle(self):
         if self.english_subtitles and self.current_subtitle_index < len(self.english_subtitles) - 1:
@@ -272,13 +293,53 @@ class VideoPlayer(QMainWindow):
             self.jump_to_subtitle(self.current_subtitle_index)
 
     def previous_subtitle(self):
-        if self.english_subtitles and self.current_subtitle_index > 0:
+        if not self.english_subtitles or not self.media:
+            return
+            
+        if self.current_subtitle_index > 0:
             self.current_subtitle_index -= 1
-            self.jump_to_subtitle(self.current_subtitle_index)
+            subtitle = self.english_subtitles[self.current_subtitle_index]
+            start_time = (subtitle.start.hours * 3600 + 
+                         subtitle.start.minutes * 60 +
+                         subtitle.start.seconds) * 1000 + subtitle.start.milliseconds
+            
+            # Set video to start of the subtitle
+            self.media_player.set_time(start_time)
+            self.update_subtitle_text()
+            
+            # Start playing and set end time for auto-pause
+            self.media_player.play()
+            self.is_playing = True
+            
+            # Set end time for auto-pause
+            end_time = (subtitle.end.hours * 3600 + 
+                       subtitle.end.minutes * 60 +
+                       subtitle.end.seconds) * 1000 + subtitle.end.milliseconds
+            self.next_subtitle_end_time = end_time
 
     def repeat_current_subtitle(self):
-        if self.english_subtitles:
-            self.jump_to_subtitle(self.current_subtitle_index)
+        if not self.english_subtitles or not self.media:
+            return
+            
+        if 0 <= self.current_subtitle_index < len(self.english_subtitles):
+            subtitle = self.english_subtitles[self.current_subtitle_index]
+            start_time = (subtitle.start.hours * 3600 + 
+                         subtitle.start.minutes * 60 +
+                         subtitle.start.seconds) * 1000 + subtitle.start.milliseconds
+            
+            # Set video to start of current subtitle
+            self.media_player.set_time(start_time)
+            self.update_subtitle_text()
+            
+            # Start playing and set end time for auto-pause
+            self.media_player.play()
+            self.is_playing = True
+            
+            # Set end time for auto-pause
+            end_time = (subtitle.end.hours * 3600 + 
+                       subtitle.end.minutes * 60 +
+                       subtitle.end.seconds) * 1000 + subtitle.end.milliseconds
+            self.next_subtitle_end_time = end_time
 
     def jump_to_subtitle(self, index):
         if self.english_subtitles:
@@ -303,10 +364,12 @@ class VideoPlayer(QMainWindow):
             self.persian_subtitle_label.setText("")
 
     def update_subtitle(self):
-        if not self.media_player.is_playing():
+        if not self.media:
             return
 
         current_time = self.media_player.get_time()
+        if current_time < 0:
+            return
 
         # Check if we need to stop at next subtitle's end
         if self.next_subtitle_end_time and current_time >= self.next_subtitle_end_time:
@@ -315,13 +378,18 @@ class VideoPlayer(QMainWindow):
             self.next_subtitle_end_time = None
             return
 
+        # Only update subtitle index if video is playing and not waiting for next subtitle end
+        if self.media_player.is_playing() and not self.next_subtitle_end_time:
+            if self.english_subtitles:
+                self.find_current_subtitle_index()
+
         # Update English subtitle based on current index
-        if self.english_subtitles:
+        if self.english_subtitles and self.current_subtitle_index < len(self.english_subtitles):
             current_subtitle = self.english_subtitles[self.current_subtitle_index]
             self.english_subtitle_label.setText(current_subtitle.text)
 
             # Only auto-pause at current subtitle end if not playing until next subtitle
-            if not self.next_subtitle_end_time:
+            if self.media_player.is_playing() and not self.next_subtitle_end_time:
                 end_time = (current_subtitle.end.hours * 3600 + 
                           current_subtitle.end.minutes * 60 +
                           current_subtitle.end.seconds) * 1000 + current_subtitle.end.milliseconds
@@ -329,11 +397,16 @@ class VideoPlayer(QMainWindow):
                 if current_time >= end_time:
                     self.media_player.pause()
                     self.is_playing = False
+        else:
+            self.english_subtitle_label.setText("")
 
         # Update Persian subtitle based on current video time
-        persian_subtitle = self.find_persian_subtitle(current_time)
-        if persian_subtitle:
-            self.persian_subtitle_label.setText(persian_subtitle.text)
+        if self.persian_subtitles:
+            persian_subtitle = self.find_persian_subtitle(current_time)
+            if persian_subtitle:
+                self.persian_subtitle_label.setText(persian_subtitle.text)
+            else:
+                self.persian_subtitle_label.setText("")
         else:
             self.persian_subtitle_label.setText("")
 
@@ -368,7 +441,18 @@ class VideoPlayer(QMainWindow):
         if not self.english_subtitles or not self.media:
             return
 
-        # Find the next subtitle's end time
+        # If already playing to a next subtitle, extend to the one after that
+        if self.next_subtitle_end_time and self.media_player.is_playing():
+            next_index = self.current_subtitle_index + 1
+            if next_index < len(self.english_subtitles):
+                next_subtitle = self.english_subtitles[next_index]
+                self.next_subtitle_end_time = (next_subtitle.end.hours * 3600 + 
+                                             next_subtitle.end.minutes * 60 +
+                                             next_subtitle.end.seconds) * 1000 + next_subtitle.end.milliseconds
+                self.current_subtitle_index = next_index
+            return
+
+        # Normal case - play until next subtitle
         if self.current_subtitle_index < len(self.english_subtitles) - 1:
             next_subtitle = self.english_subtitles[self.current_subtitle_index + 1]
             self.next_subtitle_end_time = (next_subtitle.end.hours * 3600 + 
@@ -391,14 +475,20 @@ class VideoPlayer(QMainWindow):
                          next_subtitle.start.minutes * 60 +
                          next_subtitle.start.seconds) * 1000 + next_subtitle.start.milliseconds
             
+            # Set video to start of next subtitle
             self.media_player.set_time(start_time)
             self.current_subtitle_index += 1
             self.update_subtitle_text()
             
-            if not self.media_player.is_playing():
-                self.media_player.play()
-                self.is_playing = True
-                self.next_subtitle_end_time = None
+            # Start playing and set end time for auto-pause
+            self.media_player.play()
+            self.is_playing = True
+            
+            # Set end time for auto-pause
+            end_time = (next_subtitle.end.hours * 3600 + 
+                       next_subtitle.end.minutes * 60 +
+                       next_subtitle.end.seconds) * 1000 + next_subtitle.end.milliseconds
+            self.next_subtitle_end_time = end_time
 
     def closeEvent(self, event):
         super().closeEvent(event)
