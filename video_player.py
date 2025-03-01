@@ -12,7 +12,7 @@ import pysrt
 class VideoPlayer(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Video Player for Language Learners")
+        self.setWindowTitle("Video Player for Language Learners V.1.0.0")
         self.setGeometry(100, 100, 1280, 720)
 
         # Create VLC instance with proper parameters
@@ -53,6 +53,9 @@ How to Use:
 3. Press Spacebar to start playing
 
 Important: If you want to change subtitles, close and restart the app!
+                                         
+check for new releases at:
+https://github.com/rabiejavadian/video-player-for-language-learners
 """)
         self.video_instructions.setStyleSheet("""
             QLabel {
