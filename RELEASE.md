@@ -1,4 +1,4 @@
-# Language Learning Video Player v1.0.0
+# Language Learning Video Player v1.1.0
 
 A specialized video player designed for language learning, featuring dual subtitle support (English and Persian) and smart navigation controls.
 
@@ -27,13 +27,14 @@ A specialized video player designed for language learning, featuring dual subtit
 - Adjustable video/subtitle layout
 
 ## Controls
-- **Spacebar**: Play/Pause
-- **Right Arrow**: Play until end of next subtitle
-- **Ctrl + Right**: Jump to next subtitle
-- **Left Arrow**: Go to previous subtitle
-- **Down Arrow**: Repeat current subtitle
-- **F**: Toggle fullscreen
-- **Escape**: Exit fullscreen
+- **Spacebar**: Toggle play/pause
+- **Up Arrow**: Practice sequence (1. Hide subtitles → 2. English only → 3. Both subtitles → 4. Next subtitle)
+- **Right Arrow**: Play from current position until the end of next subtitle line (shows both subtitles)
+- **Ctrl + Right Arrow**: Jump to start of next subtitle line and begin playing (shows both subtitles)
+- **Left Arrow**: Go to previous subtitle line and auto-resume playback (shows both subtitles)
+- **Down Arrow**: Repeat current subtitle line
+- **F**: Toggle fullscreen mode
+- **Escape**: Exit fullscreen mode
 
 ## Important Notes
 1. VLC Media Player 64-bit must be installed before running the application
@@ -52,7 +53,6 @@ A specialized video player designed for language learning, featuring dual subtit
 - Improved subtitle synchronization
 
 ## Known Issues
-- Changing subtitles while video is playing may cause sync issues (restart required)
 - VLC Media Player 64-bit is required for proper operation
 
 ## Support

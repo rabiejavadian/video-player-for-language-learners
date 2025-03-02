@@ -12,7 +12,7 @@ import pysrt
 class VideoPlayer(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Video Player for Language Learners V.1.0.0")
+        self.setWindowTitle("Video Player for Language Learners V1.1.0")
         self.setGeometry(100, 100, 1280, 720)
 
         # Create VLC instance with proper parameters
@@ -52,7 +52,6 @@ How to Use:
 2. Open English and Persian subtitles
 3. Press Spacebar to start playing
 
-Important: If you want to change subtitles, close and restart the app!
                                          
 check for new releases at:
 https://github.com/rabiejavadian/video-player-for-language-learners
@@ -137,6 +136,9 @@ https://github.com/rabiejavadian/video-player-for-language-learners
         self.current_english_subtitle_path = None
         self.current_persian_subtitle_path = None
         self.next_subtitle_end_time = None
+        self.subtitle_visibility_state = 0  # 0: all hidden, 1: English only, 2: both visible
+        self.practice_step = 0  # 0: not in practice, 1-4: current step
+        self.practice_times = None  # Store start and end times during practice
 
         # Timer for updating subtitle display
         self.timer = QTimer(self)
@@ -146,9 +148,22 @@ https://github.com/rabiejavadian/video-player-for-language-learners
         # Set up key event handling
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
+        # Add subtitle visibility control
+        self.english_subtitle_label.setVisible(True)
+        self.persian_subtitle_label.setVisible(True)
+
     def load_video(self, video_path):
         self.current_video_path = video_path
         self.video_instructions.hide()  # Hide instructions when video is loaded
+        
+        # Unload any existing subtitles
+        self.english_subtitles = None
+        self.persian_subtitles = None
+        self.current_english_subtitle_path = None
+        self.current_persian_subtitle_path = None
+        self.current_subtitle_index = 0
+        self.english_subtitle_label.setText("")
+        self.persian_subtitle_label.setText("")
         
         # Create media with subtitle disabled
         media_opts = [
@@ -278,6 +293,8 @@ https://github.com/rabiejavadian/video-player-for-language-learners
             if not self.media_player.is_playing():
                 self.media_player.play()
                 self.is_playing = True
+        elif event.key() == Qt.Key.Key_Up:
+            self.practice_subtitle_sequence()
         elif event.key() == Qt.Key.Key_F:
             self.toggle_fullscreen()
         elif event.key() == Qt.Key.Key_Escape and self.is_fullscreen:
@@ -328,6 +345,11 @@ https://github.com/rabiejavadian/video-player-for-language-learners
             return
             
         if self.current_subtitle_index > 0:
+            # Show both subtitles
+            self.subtitle_visibility_state = 2
+            self.english_subtitle_label.setVisible(True)
+            self.persian_subtitle_label.setVisible(True)
+            
             self.current_subtitle_index -= 1
             subtitle = self.english_subtitles[self.current_subtitle_index]
             start_time = (subtitle.start.hours * 3600 + 
@@ -407,6 +429,17 @@ https://github.com/rabiejavadian/video-player-for-language-learners
             self.media_player.pause()
             self.is_playing = False
             self.next_subtitle_end_time = None
+            
+            # Keep subtitles visible based on visibility state
+            if self.subtitle_visibility_state == 0:
+                self.english_subtitle_label.setVisible(False)
+                self.persian_subtitle_label.setVisible(False)
+            elif self.subtitle_visibility_state == 1:
+                self.english_subtitle_label.setVisible(True)
+                self.persian_subtitle_label.setVisible(False)
+            elif self.subtitle_visibility_state == 2:
+                self.english_subtitle_label.setVisible(True)
+                self.persian_subtitle_label.setVisible(True)
             return
 
         # Only update subtitle index if video is playing and not waiting for next subtitle end
@@ -428,6 +461,17 @@ https://github.com/rabiejavadian/video-player-for-language-learners
                 if current_time >= end_time:
                     self.media_player.pause()
                     self.is_playing = False
+                    
+                    # Keep subtitles visible based on visibility state
+                    if self.subtitle_visibility_state == 0:
+                        self.english_subtitle_label.setVisible(False)
+                        self.persian_subtitle_label.setVisible(False)
+                    elif self.subtitle_visibility_state == 1:
+                        self.english_subtitle_label.setVisible(True)
+                        self.persian_subtitle_label.setVisible(False)
+                    elif self.subtitle_visibility_state == 2:
+                        self.english_subtitle_label.setVisible(True)
+                        self.persian_subtitle_label.setVisible(True)
         else:
             self.english_subtitle_label.setText("")
 
@@ -472,6 +516,11 @@ https://github.com/rabiejavadian/video-player-for-language-learners
         if not self.english_subtitles or not self.media:
             return
 
+        # Show both subtitles
+        self.subtitle_visibility_state = 2
+        self.english_subtitle_label.setVisible(True)
+        self.persian_subtitle_label.setVisible(True)
+
         # If already playing to a next subtitle, extend to the one after that
         if self.next_subtitle_end_time and self.media_player.is_playing():
             next_index = self.current_subtitle_index + 1
@@ -500,6 +549,11 @@ https://github.com/rabiejavadian/video-player-for-language-learners
         if not self.english_subtitles or not self.media:
             return
 
+        # Show both subtitles
+        self.subtitle_visibility_state = 2
+        self.english_subtitle_label.setVisible(True)
+        self.persian_subtitle_label.setVisible(True)
+
         if self.current_subtitle_index < len(self.english_subtitles) - 1:
             next_subtitle = self.english_subtitles[self.current_subtitle_index + 1]
             start_time = (next_subtitle.start.hours * 3600 + 
@@ -520,6 +574,100 @@ https://github.com/rabiejavadian/video-player-for-language-learners
                        next_subtitle.end.minutes * 60 +
                        next_subtitle.end.seconds) * 1000 + next_subtitle.end.milliseconds
             self.next_subtitle_end_time = end_time
+
+    def practice_subtitle_sequence(self):
+        if not self.english_subtitles or not self.media:
+            return
+            
+        if 0 <= self.current_subtitle_index < len(self.english_subtitles):
+            # If not in practice mode or finished previous sequence, start new sequence
+            if self.practice_step == 0:
+                subtitle = self.english_subtitles[self.current_subtitle_index]
+                
+                # Calculate times
+                start_time = (subtitle.start.hours * 3600 + 
+                            subtitle.start.minutes * 60 +
+                            subtitle.start.seconds) * 1000 + subtitle.start.milliseconds
+                end_time = (subtitle.end.hours * 3600 + 
+                           subtitle.end.minutes * 60 +
+                           subtitle.end.seconds) * 1000 + subtitle.end.milliseconds
+                
+                # Store times for reuse
+                self.practice_times = (start_time, end_time)
+                self.practice_step = 1
+                
+                # Step 1: Hide subtitles and play
+                self.subtitle_visibility_state = 0
+                self.english_subtitle_label.setVisible(False)
+                self.persian_subtitle_label.setVisible(False)
+                
+                self.media_player.set_time(start_time)
+                self.next_subtitle_end_time = end_time
+                self.media_player.play()
+                self.is_playing = True
+                
+            # Continue with next step based on current progress
+            elif self.practice_step == 1:
+                # Step 2: Show English and repeat
+                subtitle = self.english_subtitles[self.current_subtitle_index]
+                start_time = (subtitle.start.hours * 3600 + 
+                            subtitle.start.minutes * 60 +
+                            subtitle.start.seconds) * 1000 + subtitle.start.milliseconds
+                end_time = (subtitle.end.hours * 3600 + 
+                           subtitle.end.minutes * 60 +
+                           subtitle.end.seconds) * 1000 + subtitle.end.milliseconds
+                
+                self.practice_times = (start_time, end_time)
+                self.subtitle_visibility_state = 1
+                self.english_subtitle_label.setVisible(True)
+                self.persian_subtitle_label.setVisible(False)
+                
+                self.media_player.set_time(start_time)
+                self.next_subtitle_end_time = end_time
+                self.media_player.play()
+                self.is_playing = True
+                self.practice_step = 2
+                
+            elif self.practice_step == 2:
+                # Step 3: Show both subtitles and repeat
+                start_time, end_time = self.practice_times
+                self.subtitle_visibility_state = 2
+                self.english_subtitle_label.setVisible(True)
+                self.persian_subtitle_label.setVisible(True)
+                
+                self.media_player.set_time(start_time)
+                self.next_subtitle_end_time = end_time
+                self.media_player.play()
+                self.is_playing = True
+                self.practice_step = 3
+                
+            elif self.practice_step == 3:
+                # Step 4: Continue to next subtitle with hidden subtitles
+                if self.current_subtitle_index < len(self.english_subtitles) - 1:
+                    # Hide subtitles
+                    self.subtitle_visibility_state = 0
+                    self.english_subtitle_label.setVisible(False)
+                    self.persian_subtitle_label.setVisible(False)
+                    
+                    # Get next subtitle end time
+                    next_subtitle = self.english_subtitles[self.current_subtitle_index + 1]
+                    end_time = (next_subtitle.end.hours * 3600 + 
+                              next_subtitle.end.minutes * 60 +
+                              next_subtitle.end.seconds) * 1000 + next_subtitle.end.milliseconds
+                    
+                    # Continue from current position
+                    self.next_subtitle_end_time = end_time
+                    self.current_subtitle_index += 1
+                    self.media_player.play()
+                    self.is_playing = True
+                    self.practice_step = 1  # Set to step 1 for next practice sequence
+                    
+                    # Store times for the next subtitle for subsequent steps
+                    next_subtitle = self.english_subtitles[self.current_subtitle_index]
+                    start_time = (next_subtitle.start.hours * 3600 + 
+                                next_subtitle.start.minutes * 60 +
+                                next_subtitle.start.seconds) * 1000 + next_subtitle.start.milliseconds
+                    self.practice_times = (start_time, end_time)
 
     def closeEvent(self, event):
         super().closeEvent(event)
@@ -583,7 +731,6 @@ https://github.com/rabiejavadian/video-player-for-language-learners
         <li style='margin-bottom: 8px;'>Open English and Persian subtitle files</li>
         <li style='margin-bottom: 8px;'>Press Spacebar to start playing</li>
     </ol>
-    <p style='color: #ff9999;'><strong>Important:</strong> If subtitles become out of sync or you want to change subtitles, please close and restart the application!</p>
 </div>
 
 <h2>Keyboard Shortcuts</h2>
@@ -597,26 +744,30 @@ https://github.com/rabiejavadian/video-player-for-language-learners
         <td style='padding: 8px; border: 1px solid #404040;'>Play/Pause video</td>
     </tr>
     <tr style='background-color: #2A2A2A;'>
+        <td style='padding: 8px; border: 1px solid #404040;'>Up Arrow</td>
+        <td style='padding: 8px; border: 1px solid #404040;'>Practice sequence: 1) No subtitles 2) English only 3) Both subtitles 4) Next subtitle</td>
+    </tr>
+    <tr>
         <td style='padding: 8px; border: 1px solid #404040;'>Right Arrow</td>
         <td style='padding: 8px; border: 1px solid #404040;'>Play until end of next subtitle</td>
     </tr>
-    <tr>
+    <tr style='background-color: #2A2A2A;'>
         <td style='padding: 8px; border: 1px solid #404040;'>Ctrl + Right</td>
         <td style='padding: 8px; border: 1px solid #404040;'>Skip to start of next subtitle</td>
     </tr>
-    <tr style='background-color: #2A2A2A;'>
+    <tr>
         <td style='padding: 8px; border: 1px solid #404040;'>Left Arrow</td>
         <td style='padding: 8px; border: 1px solid #404040;'>Go to previous subtitle</td>
     </tr>
-    <tr>
+    <tr style='background-color: #2A2A2A;'>
         <td style='padding: 8px; border: 1px solid #404040;'>Down Arrow</td>
         <td style='padding: 8px; border: 1px solid #404040;'>Repeat current subtitle</td>
     </tr>
-    <tr style='background-color: #2A2A2A;'>
+    <tr>
         <td style='padding: 8px; border: 1px solid #404040;'>F</td>
         <td style='padding: 8px; border: 1px solid #404040;'>Toggle fullscreen</td>
     </tr>
-    <tr>
+    <tr style='background-color: #2A2A2A;'>
         <td style='padding: 8px; border: 1px solid #404040;'>Escape</td>
         <td style='padding: 8px; border: 1px solid #404040;'>Exit fullscreen</td>
     </tr>
@@ -624,11 +775,11 @@ https://github.com/rabiejavadian/video-player-for-language-learners
 
 <h3 style='margin-top: 15px;'>Tips:</h3>
 <ul>
-    <li>Use Right Arrow to continue from current position</li>
-    <li>Use Ctrl+Right to jump to next subtitle immediately</li>
+    <li>Use Right Arrow to continue from current position (shows both subtitles)</li>
+    <li>Use Ctrl+Right to jump to next subtitle immediately (shows both subtitles)</li>
+    <li>Use Left Arrow to review previous subtitles (shows both subtitles)</li>
     <li>Use Down Arrow to practice current subtitle</li>
-    <li>Use Left Arrow to review previous subtitles</li>
-    <li>If subtitles become out of sync, restart the application</li>
+    <li>Use Up Arrow for practice sequence: hide subtitles → English only → both subtitles → next subtitle</li>
 </ul>
 """
         dialog = QDialog(self)

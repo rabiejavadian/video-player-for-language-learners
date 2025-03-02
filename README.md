@@ -14,12 +14,14 @@ This application was developed entirely through natural language prompting in [C
 - Control playback based on subtitle timing for better comprehension
 - Navigate through content line by line to focus on specific phrases
 - Pause automatically at the end of each subtitle for practice
+- Practice with a structured learning sequence (no subtitles → English only → both subtitles)
 - Adjust viewing area between video and subtitles as needed
 
 ## Features
 
 - Play MKV and MP4 video files with dual subtitle support (English and Persian)
 - Smart subtitle navigation with automatic pause and resume
+- Structured practice sequence for effective language learning
 - Large video display with adjustable subtitle section
 - Dark theme interface for comfortable viewing
 - Fullscreen mode support
@@ -28,10 +30,11 @@ This application was developed entirely through natural language prompting in [C
 ## Controls
 
 - **Spacebar**: Toggle play/pause
-- **Right Arrow**: Play from current position until the end of next subtitle line
-- **Ctrl + Right Arrow**: Jump to start of next subtitle line and begin playing
-- **Left Arrow**: Go to previous subtitle line and auto-resume playback
-- **Down Arrow**: Repeat current subtitle line and auto-resume playback
+- **Up Arrow**: Practice sequence (1. Hide subtitles → 2. English only → 3. Both subtitles → 4. Next subtitle)
+- **Right Arrow**: Play from current position until the end of next subtitle line (shows both subtitles)
+- **Ctrl + Right Arrow**: Jump to start of next subtitle line and begin playing (shows both subtitles)
+- **Left Arrow**: Go to previous subtitle line and auto-resume playback (shows both subtitles)
+- **Down Arrow**: Repeat current subtitle line
 - **F**: Toggle fullscreen mode
 - **Escape**: Exit fullscreen mode
 
@@ -106,23 +109,7 @@ This application was developed entirely through natural language prompting in [C
 3. Click "Open English Subtitles" to load the English subtitle file
 4. Click "Open Persian Subtitles" to load the Persian subtitle file
 
-### Controls
 
-- **Spacebar**: Toggle play/pause
-- **Right Arrow**: Play from current position until the end of next subtitle line
-- **Ctrl + Right Arrow**: Jump to start of next subtitle line and begin playing
-- **Left Arrow**: Go to previous subtitle line and auto-resume playback
-- **Down Arrow**: Repeat current subtitle line and auto-resume playback
-- **F**: Toggle fullscreen mode
-- **Escape**: Exit fullscreen mode
-
-### Layout Features
-
-- Large video display area (90% of window height by default)
-- Compact subtitle section (10% of window height by default)
-- Adjustable split between video and subtitle areas using the splitter handle
-- Semi-transparent subtitle background for better readability
-- Dual subtitle display with English on top and Persian below
 
 ## Usage Tips for Language Learning
 
@@ -137,7 +124,13 @@ This application was developed entirely through natural language prompting in [C
    - Compare English and Persian translations
    - Use Ctrl+Right arrow to skip to next line when confident
 
-3. **Layout Optimization**:
+3. **Practice Sequence (Up Arrow)**:
+   - **Step 1**: Hides both subtitles - Test your listening comprehension
+   - **Step 2**: Shows English subtitle only - Check your understanding
+   - **Step 3**: Shows both English and Persian subtitles - Compare translations
+   - **Step 4**: Moves to next subtitle with both subtitles hidden - Continue practice
+
+4. **Layout Optimization**:
    - Adjust the splitter to balance video and subtitle visibility
    - Use fullscreen mode (F key) for immersive viewing
    - Both subtitles are clearly visible with high contrast
@@ -145,6 +138,10 @@ This application was developed entirely through natural language prompting in [C
 ## Note
 
 The video player automatically pauses at the end of each subtitle line, allowing you to focus on pronunciation and comprehension. The dual subtitle display helps in understanding context and translation simultaneously. The interface is designed for minimal distraction while maintaining all necessary controls for effective language learning.
+
+## Latest Release
+
+Check the [Releases](https://github.com/rabiejavadian/video-player-for-language-learners/releases) page for the latest version and pre-built executable.
 
 ## License
 
@@ -161,7 +158,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 
-1. Check the [Issues](../../issues) page
+1. Check the [Issues](https://github.com/rabiejavadian/video-player-for-language-learners/issues) page
 2. Create a new issue if your problem isn't already listed
 3. Provide as much detail as possible, including:
    - Steps to reproduce the issue
