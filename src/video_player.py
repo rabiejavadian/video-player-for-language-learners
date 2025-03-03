@@ -1,18 +1,75 @@
 import sys
-import vlc
-import json
 import os
+import ctypes
+import webbrowser
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                             QHBoxLayout, QPushButton, QFileDialog, QLabel,
-                            QSplitter, QDialog, QTextBrowser)
+                            QSplitter, QDialog, QTextBrowser, QMessageBox)
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont, QColor
 import pysrt
 
+# Try to import VLC with better error handling
+try:
+    # Try to import VLC normally first
+    import vlc
+except (ImportError, OSError, ctypes.ArgumentError) as e:
+    # If that fails, try to find VLC in common installation paths
+    if sys.platform.startswith('win'):
+        # Common VLC installation paths on Windows
+        vlc_paths = [
+            os.path.join(os.environ.get('PROGRAMFILES', ''), 'VideoLAN', 'VLC'),
+            os.path.join(os.environ.get('PROGRAMFILES(X86)', ''), 'VideoLAN', 'VLC'),
+            os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Programs', 'VideoLAN', 'VLC')
+        ]
+        
+        # Add VLC directory to PATH to help find DLLs
+        for path in vlc_paths:
+            if os.path.exists(path):
+                os.environ['PATH'] = path + os.pathsep + os.environ.get('PATH', '')
+                break
+    
+    # Try importing again after setting PATH
+    try:
+        import vlc
+    except Exception as e:
+        # Show error message and exit
+        app = QApplication(sys.argv)
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("VLC Not Found")
+        msg_box.setText("VLC Media Player is required but was not found on your system.")
+        msg_box.setInformativeText("Please download and install VLC from the official website.")
+        msg_box.setDetailedText(
+            "This application requires VLC Media Player to function properly.\n\n"
+            "1. Download VLC from https://www.videolan.org/vlc/\n"
+            "2. Install VLC using the default settings\n"
+            "3. Restart this application after installing VLC\n\n"
+            "Error details: " + str(e)
+        )
+        
+        # Add buttons
+        download_button = msg_box.addButton("Download VLC", QMessageBox.ButtonRole.ActionRole)
+        exit_button = msg_box.addButton("Exit", QMessageBox.ButtonRole.RejectRole)
+        
+        # Set default button
+        msg_box.setDefaultButton(download_button)
+        
+        # Show dialog
+        msg_box.exec()
+        
+        # Handle button clicks
+        clicked_button = msg_box.clickedButton()
+        
+        if clicked_button == download_button:
+            # Open VLC download page
+            webbrowser.open("https://www.videolan.org/vlc/")
+        
+        sys.exit(1)
+
 class VideoPlayer(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Video Player for Language Learners V1.1.0")
+        self.setWindowTitle("Video Player for Language Learners V1.1.1")
         self.setGeometry(100, 100, 1280, 720)
 
         # Create VLC instance with proper parameters
@@ -48,13 +105,18 @@ class VideoPlayer(QMainWindow):
         self.video_frame = QWidget()
         self.video_instructions = QLabel("""
 How to Use:
-1. Click 'Open Video' to select your video file
-2. Open English and Persian subtitles
-3. Press Spacebar to start playing
+        1. Click 'Open Video' to select your video file
+        2. Open English and Persian subtitles
+        3. Press Spacebar to start playing
 
+Note:
+        If your subtitles are not synchronized with the video, 
+        you can sync them using VLC, PotPlayer, or any other video player, 
+        then save the modified subtitle files to use in this application.
                                          
+
 check for new releases at:
-https://github.com/rabiejavadian/video-player-for-language-learners
+https://github.com/rabiejavadian/video-player-for-language-learners/releases/latest
 """)
         self.video_instructions.setStyleSheet("""
             QLabel {
@@ -64,7 +126,7 @@ https://github.com/rabiejavadian/video-player-for-language-learners
                 padding: 20px;
             }
         """)
-        self.video_instructions.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.video_instructions.setAlignment(Qt.AlignmentFlag.AlignLeft)
         video_layout = QVBoxLayout(self.video_frame)
         video_layout.addWidget(self.video_instructions, alignment=Qt.AlignmentFlag.AlignCenter)
         self.video_frame.setStyleSheet("background-color: black;")
@@ -282,11 +344,24 @@ https://github.com/rabiejavadian/video-player-for-language-learners
         if event.key() == Qt.Key.Key_Space:
             self.toggle_play_pause()
         elif event.key() == Qt.Key.Key_Right:
+            # Reset practice sequence if in progress
+            if self.practice_step > 0:
+                self.practice_step = 0
+                # self.subtitle_visibility_state = 2  # Show both subtitles
+                # self.english_subtitle_label.setVisible(True)
+                # self.persian_subtitle_label.setVisible(True)
+            
             if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
                 self.start_from_next_subtitle()
             else:
                 self.play_until_next_subtitle()
         elif event.key() == Qt.Key.Key_Left:
+            # Reset practice sequence if in progress
+            if self.practice_step > 0:
+                self.practice_step = 0
+                # self.subtitle_visibility_state = 2  # Show both subtitles
+                # self.english_subtitle_label.setVisible(True)
+                # self.persian_subtitle_label.setVisible(True)
             self.previous_subtitle()
         elif event.key() == Qt.Key.Key_Down:
             self.repeat_current_subtitle()
@@ -649,13 +724,20 @@ https://github.com/rabiejavadian/video-player-for-language-learners
                     self.english_subtitle_label.setVisible(False)
                     self.persian_subtitle_label.setVisible(False)
                     
+                    # Get current subtitle end time to start from
+                    current_subtitle = self.english_subtitles[self.current_subtitle_index]
+                    start_time = (current_subtitle.end.hours * 3600 + 
+                                current_subtitle.end.minutes * 60 +
+                                current_subtitle.end.seconds) * 1000 + current_subtitle.end.milliseconds
+                    
                     # Get next subtitle end time
                     next_subtitle = self.english_subtitles[self.current_subtitle_index + 1]
                     end_time = (next_subtitle.end.hours * 3600 + 
                               next_subtitle.end.minutes * 60 +
                               next_subtitle.end.seconds) * 1000 + next_subtitle.end.milliseconds
                     
-                    # Continue from current position
+                    # Start from end of current subtitle
+                    self.media_player.set_time(start_time)
                     self.next_subtitle_end_time = end_time
                     self.current_subtitle_index += 1
                     self.media_player.play()
@@ -664,10 +746,10 @@ https://github.com/rabiejavadian/video-player-for-language-learners
                     
                     # Store times for the next subtitle for subsequent steps
                     next_subtitle = self.english_subtitles[self.current_subtitle_index]
-                    start_time = (next_subtitle.start.hours * 3600 + 
-                                next_subtitle.start.minutes * 60 +
-                                next_subtitle.start.seconds) * 1000 + next_subtitle.start.milliseconds
-                    self.practice_times = (start_time, end_time)
+                    next_start_time = (next_subtitle.start.hours * 3600 + 
+                                     next_subtitle.start.minutes * 60 +
+                                     next_subtitle.start.seconds) * 1000 + next_subtitle.start.milliseconds
+                    self.practice_times = (next_start_time, end_time)
 
     def closeEvent(self, event):
         super().closeEvent(event)
@@ -773,13 +855,13 @@ https://github.com/rabiejavadian/video-player-for-language-learners
     </tr>
 </table>
 
-<h3 style='margin-top: 15px;'>Tips:</h3>
+<h3 style='margin-top: 15px;'>Practical Tips:</h3>
 <ul>
-    <li>Use Right Arrow to continue from current position (shows both subtitles)</li>
-    <li>Use Ctrl+Right to jump to next subtitle immediately (shows both subtitles)</li>
-    <li>Use Left Arrow to review previous subtitles (shows both subtitles)</li>
-    <li>Use Down Arrow to practice current subtitle</li>
-    <li>Use Up Arrow for practice sequence: hide subtitles → English only → both subtitles → next subtitle</li>
+    <li>Use Right Arrow (➡️) multiple times to playback until a number of subtitles</li>
+    <li>Use Ctrl+Right (`Ctrl` + ➡️) multiple times to fast-track video playback</li>
+    <li>Use Up Arrow (⬆️) for practice sequence: → hide subtitles → English only → both subtitles → next subtitle</li>
+    <li>Use Down Arrow (⬇️) to listen again</li>
+    <li>Press Up Arrow (⬆️) once to hide subtitles, then use Down Arrow (⬇️) to replay the subtitle while keeping it hidden - perfect for testing your listening comprehension!</li>
 </ul>
 """
         dialog = QDialog(self)

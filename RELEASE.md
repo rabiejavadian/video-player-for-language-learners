@@ -1,11 +1,27 @@
-# Language Learning Video Player v1.1.0
+# Language Learning Video Player v1.1.1
 
-A specialized video player designed for language learning, featuring dual subtitle support (English and Persian) and smart navigation controls.
+A specialized video player designed for language learning, featuring dual subtitle support and navigation controls. Perfect for studying languages through movies and TV shows. 
+If your subtitles are not synchronized with the video, you can sync them using VLC, PotPlayer, or any other video player, then save the modified subtitle files to use in this application.
 
 ## Release Contents
 - `Language_Learning_Video_Player.exe` - Standalone executable (Windows 64-bit)
 - `README.md` - Documentation and usage instructions
 - `LICENSE` - MIT License
+
+## What's New in v1.1.1
+
+### Improved VLC Detection
+- Better error handling when VLC is not found
+- User-friendly error message with direct download link if VLC is missing
+
+### Enhanced Practice Sequence
+- More consistent behavior in the practice sequence:
+  1. Hide both subtitles and play from current time to end of current subtitle - Test pure listening
+  2. Show English subtitle and play from start to end of current subtitle - Check comprehension
+  3. Show both subtitles and play from start to end of current subtitle - Compare translations
+  4. Hide both subtitles and play from end of current subtitle to end of next subtitle - Continue practice with next subtitle
+- Improved timing between practice steps
+- Better state management during practice sequence
 
 ## System Requirements
 - Windows 10 or newer (64-bit)
@@ -28,32 +44,30 @@ A specialized video player designed for language learning, featuring dual subtit
 
 ## Controls
 - **Spacebar**: Toggle play/pause
-- **Up Arrow**: Practice sequence (1. Hide subtitles → 2. English only → 3. Both subtitles → 4. Next subtitle)
-- **Right Arrow**: Play from current position until the end of next subtitle line (shows both subtitles)
+- **Up Arrow**: Practice sequence:
+  1. Hide subtitles, play current subtitle from current position
+  2. Show English, replay current subtitle from start
+  3. Show both subtitles, replay current subtitle from start
+  4. Hide subtitles, play from end of current to end of next subtitle
+- **Right Arrow**: Play until end of next subtitle line (shows both subtitles)
 - **Ctrl + Right Arrow**: Jump to start of next subtitle line and begin playing (shows both subtitles)
 - **Left Arrow**: Go to previous subtitle line and auto-resume playback (shows both subtitles)
 - **Down Arrow**: Repeat current subtitle line
 - **F**: Toggle fullscreen mode
 - **Escape**: Exit fullscreen mode
 
+## Practical Tips
+- Use Right Arrow (➡️) multiple times to playback until a number of subtitles
+- Use Ctrl+Right (`Ctrl` + ➡️) multiple times to fast-track video playback
+- Use Up Arrow (⬆️) for practice sequence: hide subtitles → English only → both subtitles → next subtitle
+- Use Down Arrow (⬇️) to listen again
+- Press Up Arrow (⬆️) once to hide subtitles, then use Down Arrow (⬇️) to replay the subtitle while keeping it hidden - perfect for testing your listening comprehension!
+
 ## Important Notes
 1. VLC Media Player 64-bit must be installed before running the application
-2. If subtitles become out of sync, please restart the application
-3. Load video file first, then subtitle files
-4. Press spacebar to start playback
-
-## Changes in v1.0.0
-- Initial release
-- Dual subtitle support (English and Persian)
-- Smart navigation controls
-- Auto-pause feature
-- Fullscreen mode
-- Dark theme interface
-- Keyboard shortcuts
-- Improved subtitle synchronization
-
-## Known Issues
-- VLC Media Player 64-bit is required for proper operation
+2. The application will help you locate or download VLC if needed
+3. Practice sequence is designed for systematic language learning
+4. Auto-pause feature helps maintain a steady learning pace
 
 ## Support
 If you encounter any issues:

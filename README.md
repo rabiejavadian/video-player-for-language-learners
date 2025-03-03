@@ -1,6 +1,7 @@
 # Video Player for Language Learners
 
-A specialized video player designed for language learning, featuring dual subtitle support and smart navigation controls. Perfect for studying languages through movies and TV shows, with synchronized English and Persian subtitles.
+A specialized video player designed for language learning, featuring dual subtitle support and navigation controls. Perfect for studying languages through movies and TV shows. 
+If your subtitles are not synchronized with the video, you can sync them using VLC, PotPlayer, or any other video player, then save the modified subtitle files to use in this application.
 
 ![Player Screenshot](images/Player.png)
 
@@ -12,20 +13,14 @@ This application was developed entirely through natural language prompting in [C
 
 - Watch videos with both English and Persian subtitles simultaneously
 - Control playback based on subtitle timing for better comprehension
-- Navigate through content line by line to focus on specific phrases
 - Pause automatically at the end of each subtitle for practice
 - Practice with a structured learning sequence (no subtitles → English only → both subtitles)
-- Adjust viewing area between video and subtitles as needed
 
 ## Features
 
 - Play MKV and MP4 video files with dual subtitle support (English and Persian)
-- Smart subtitle navigation with automatic pause and resume
-- Structured practice sequence for effective language learning
-- Large video display with adjustable subtitle section
 - Dark theme interface for comfortable viewing
 - Fullscreen mode support
-- Customizable layout with adjustable video/subtitle ratio
 
 ## Controls
 
@@ -38,11 +33,17 @@ This application was developed entirely through natural language prompting in [C
 - **F**: Toggle fullscreen mode
 - **Escape**: Exit fullscreen mode
 
+## Practical Tips
+- Use Right Arrow (➡️) multiple times to playback until a number of subtitles
+- Use Ctrl+Right (`Ctrl` + ➡️) multiple times to fast-track video playback
+- Use Up Arrow (⬆️) for practice sequence: hide subtitles → English only → both subtitles → next subtitle
+- Use Down Arrow (⬇️) to listen again
+- Press Up Arrow (⬆️) once to hide subtitles, then use Down Arrow (⬇️) to replay the subtitle while keeping it hidden - perfect for testing your listening comprehension!
+
 ## Requirements
 
 - Python 3.8 or newer
 - VLC Media Player 64-bit (make sure to install the same architecture - 32 or 64 bit - as your Python installation)
-- Microsoft Visual C++ Build Tools
 - Windows 10 or newer
 
 ## Installation
@@ -51,89 +52,38 @@ This application was developed entirely through natural language prompting in [C
    - Download from: <https://www.videolan.org/vlc/>
    - Install the same architecture (32 or 64 bit) as your Python installation
 
-2. Install Microsoft Visual C++ Build Tools (if not already installed)
-   - The setup script will check for this and provide download link if needed
-   - When installing, select "Desktop development with C++"
-   - This is required for building some Python packages
-
-3. Clone or download this repository
-
-4. Run the setup script:
-   - Double-click `setup_and_run.bat`
-   - This will automatically:
-     - Check for required build tools
-     - Create a Python virtual environment
-     - Install all required dependencies
-     - Launch the application
-
-## Manual Installation (if setup script doesn't work)
-
-1. Install Microsoft Visual C++ Build Tools
-   - Download from: <https://visualstudio.microsoft.com/visual-cpp-build-tools/>
-   - Run the installer
-   - Select "Desktop development with C++"
-   - Complete the installation
-
-2. Open Command Prompt in the project directory
+2. Clone or download this repository
 
 3. Create a virtual environment:
-
    ```
    python -m venv .venv
    ```
 
 4. Activate the virtual environment:
-
    ```
    .venv\Scripts\activate
    ```
 
 5. Install dependencies:
-
    ```
-   python -m pip install --upgrade pip
-   pip install wheel setuptools
    pip install -r requirements.txt
    ```
 
 6. Run the application:
+   ```
+   python src/video_player.py
+   ```
 
-   ```
-   python video_player.py
-   ```
+Alternatively, you can use the provided batch files:
+- `run.bat` - Runs the application
+- `build_exe.bat` - Creates a standalone executable
 
 ## Usage
 
-1. Launch the application using `setup_and_run.bat` or manually running `python video_player.py`
+1. Launch the application using `run.bat` or `python src/video_player.py`
 2. Click "Open Video" to select your video file
 3. Click "Open English Subtitles" to load the English subtitle file
 4. Click "Open Persian Subtitles" to load the Persian subtitle file
-
-
-
-## Usage Tips for Language Learning
-
-1. **Initial Setup**:
-   - Use `setup_and_run.bat` for first-time setup
-   - For subsequent launches, use `run.bat` for quick start
-
-2. **Study Workflow**:
-   - Load your video and subtitle files
-   - Use arrow keys to navigate between subtitle lines
-   - Practice pronunciation during automatic pauses
-   - Compare English and Persian translations
-   - Use Ctrl+Right arrow to skip to next line when confident
-
-3. **Practice Sequence (Up Arrow)**:
-   - **Step 1**: Hides both subtitles - Test your listening comprehension
-   - **Step 2**: Shows English subtitle only - Check your understanding
-   - **Step 3**: Shows both English and Persian subtitles - Compare translations
-   - **Step 4**: Moves to next subtitle with both subtitles hidden - Continue practice
-
-4. **Layout Optimization**:
-   - Adjust the splitter to balance video and subtitle visibility
-   - Use fullscreen mode (F key) for immersive viewing
-   - Both subtitles are clearly visible with high contrast
 
 ## Note
 
@@ -164,6 +114,30 @@ If you encounter any issues or have questions:
    - Steps to reproduce the issue
    - Error messages
    - Your system configuration
+
+## Project Structure
+
+The project has a simple, monolithic structure:
+
+```
+.
+├── src/
+│   ├── video_player.py      # Main application file
+│   └── run.bat             # Script to run the application
+├── build_exe.bat           # Script to build executable
+├── requirements.txt        # Python dependencies
+├── README.md              # Documentation
+└── LICENSE               # MIT License
+```
+
+## Development
+
+To contribute to the project:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ---
 Developed with [Cursor](https://cursor.sh/) - The AI-First Code Editor

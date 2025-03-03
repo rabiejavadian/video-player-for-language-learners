@@ -24,7 +24,7 @@ pyinstaller --name="Language_Learning_Video_Player" ^
             --hidden-import="PIL" ^
             --hidden-import="PIL._imagingtk" ^
             --hidden-import="PIL._tkinter_finder" ^
-            video_player.py
+            src/video_player.py
 
 echo.
 echo Build process complete!
