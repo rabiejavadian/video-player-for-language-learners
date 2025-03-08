@@ -13,29 +13,36 @@ REM Create application icon
 echo Creating application icon...
 python create_icon.py
 
-REM Build the executable with all required settings
-echo Building executable...
-pyinstaller --name="Language_Learning_Video_Player" ^
-            --onefile ^
-            --noconsole ^
-            --add-data "LICENSE;." ^
-            --add-data "README.md;." ^
-            --icon="app_icon.ico" ^
-            --hidden-import="PIL" ^
-            --hidden-import="PIL._imagingtk" ^
-            --hidden-import="PIL._tkinter_finder" ^
-            src/video_player.py
+echo Cleaning previous builds...
+rmdir /s /q "build" 2>nul
+rmdir /s /q "dist" 2>nul
+del /f /q "*.spec" 2>nul
 
-echo.
-echo Build process complete!
-echo The executable can be found in the 'dist' folder
-echo.
-echo Next steps:
-echo 1. Test the executable
-echo 2. Create a GitHub release
-echo 3. Upload the following files to the release:
-echo    - dist/Language_Learning_Video_Player.exe
-echo    - README.md
-echo    - LICENSE
-echo.
-pause 
+echo Building executable...
+pyinstaller --clean ^
+    --noconfirm ^
+    --noconsole ^
+    --name "Language_Learning_Video_Player" ^
+    --add-data "LICENSE;." ^
+    --hidden-import=vlc ^
+    --hidden-import=pysrt ^
+    --hidden-import=PyQt6 ^
+    --hidden-import=PyQt6.QtCore ^
+    --hidden-import=PyQt6.QtGui ^
+    --hidden-import=PyQt6.QtWidgets ^
+    --collect-all vlc ^
+    --exclude-module matplotlib ^
+    --exclude-module numpy ^
+    --exclude-module PIL ^
+    --exclude-module tkinter ^
+    src/video_player.py
+
+if errorlevel 1 (
+    echo Build failed!
+    pause
+    exit /b 1
+)
+
+echo Build successful!
+echo Executable is in the dist folder
+pause
