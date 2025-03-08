@@ -8,8 +8,8 @@ A specialized video player designed for language learning, featuring dual subtit
 ## About
 
 This application was developed entirely through natural language prompting in:
-[Cursor - The AI-First Code Editor](https://cursor.sh/)
-[Visual Studio Code](https://code.visualstudio.com/) - Microsoft Copilot
+- [Cursor - The AI-First Code Editor](https://cursor.sh/)
+- [Visual Studio Code](https://code.visualstudio.com/) - Microsoft Copilot
 
 ## Hint
 
@@ -147,5 +147,5 @@ To contribute to the project:
 
 ---
 Developed with:
-[Cursor](https://cursor.sh/) - The AI-First Code Editor 
-[Visual Studio Code](https://code.visualstudio.com/) - Microsoft Copilot
+- [Cursor](https://cursor.sh/) - The AI-First Code Editor 
+- [Visual Studio Code](https://code.visualstudio.com/) - Microsoft Copilot
