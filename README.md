@@ -1,13 +1,19 @@
 # Video Player for Language Learners
 
 A specialized video player designed for language learning, featuring dual subtitle support and navigation controls. Perfect for studying languages through movies and TV shows. 
-If your subtitles are not synchronized with the video, you can sync them using VLC, PotPlayer, or any other video player, then save the modified subtitle files to use in this application.
+
 
 ![Player Screenshot](images/Player.png)
 
 ## About
 
-This application was developed entirely through natural language prompting in [Cursor - The AI-First Code Editor](https://cursor.sh/)
+This application was developed entirely through natural language prompting in:
+[Cursor - The AI-First Code Editor](https://cursor.sh/)
+[Visual Studio Code](https://code.visualstudio.com/) - Microsoft Copilot
+
+## Hint
+
+If your subtitles are not synchronized with the video, you can sync them using VLC, PotPlayer, or any other video player, then save the modified subtitle files to use in this application.
 
 ### Key Benefits for Language Learners
 
@@ -99,7 +105,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- Built with [Cursor](https://cursor.sh/) and Claude (Anthropic's AI)
+- Built with [Cursor](https://cursor.sh/) and Claude (Anthropic's AI) and [Visual Studio Code](https://code.visualstudio.com/) - Microsoft Copilot
 - Uses VLC Media Player for video playback
 - PyQt6 for the user interface
 - Special thanks to the open-source community
@@ -140,4 +146,6 @@ To contribute to the project:
 4. Submit a pull request
 
 ---
-Developed with [Cursor](https://cursor.sh/) - The AI-First Code Editor
+Developed with:
+[Cursor](https://cursor.sh/) - The AI-First Code Editor 
+[Visual Studio Code](https://code.visualstudio.com/) - Microsoft Copilot
